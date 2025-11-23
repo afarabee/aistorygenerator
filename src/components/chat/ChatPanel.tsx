@@ -280,7 +280,7 @@ export function ChatPanel({ onApplySuggestion, onUndoSuggestion, isHorizontallyC
                       {message.timestamp.toLocaleTimeString()}
                     </span>
                     <div className="flex gap-1">
-                      {message.type === 'ai' && message.suggestion && message.suggestion.trim() && message.hasUserFacingSuggestion && (
+                      {message.type === 'ai' && message.suggestion && String(message.suggestion).trim() && message.hasUserFacingSuggestion && (
                         <Button
                           variant="ghost"
                           size="sm"
