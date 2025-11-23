@@ -8,6 +8,7 @@ const StoryGenerator = () => {
   const [storyGenerated, setStoryGenerated] = useState(false);
   const [showChat, setShowChat] = useState(true);
   const [showTestData, setShowTestData] = useState(false);
+  const [story, setStory] = useState<any>(null);
 
   const handleStoryGenerated = () => {
     setStoryGenerated(true);
@@ -29,7 +30,7 @@ const StoryGenerator = () => {
   return (
     <AppLayout
       sidebarContent={<ProjectSidebar />}
-      chatContent={<ChatPanel />}
+      chatContent={<ChatPanel currentStory={story} />}
       showChat={showChat}
     >
       <StoryBuilder 
@@ -40,6 +41,7 @@ const StoryGenerator = () => {
         onToggleChat={handleToggleChat}
         showTestData={showTestData}
         onToggleTestData={handleToggleTestData}
+        onStoryUpdate={setStory}
       />
     </AppLayout>
   );
