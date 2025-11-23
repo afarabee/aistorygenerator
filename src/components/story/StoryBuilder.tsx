@@ -40,6 +40,8 @@ import { SettingsModal } from "@/components/settings/SettingsModal";
 import { NewStoryConfirmDialog } from "@/components/ui/new-story-confirm-dialog";
 import { useVersionHistory, StoryVersion } from "@/hooks/useVersionHistory";
 import { useToast } from "@/hooks/use-toast";
+import { generateMockStory } from "@/lib/mockStoryService";
+import { generateMockChatResponse } from "@/lib/mockChatService";
 
 interface UserStory {
   id: string;
@@ -268,73 +270,73 @@ export function StoryBuilder({
   });
 
   const generateStory = async () => {
-    setIsGenerating(true);
-    setShowRawInput(false);
-    setSavedInput(rawInput); // Save for restart
-    setSavedCustomPrompt(customPrompt); // Save for restart
-    
-    // Trigger the UI state change to show all sections
-    onStoryGenerated?.();
-    
-    // Simulate AI generation
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    const generatedStory = {
-      ...story,
-      title: "User Registration with Email Verification",
-      description: "As a new user, I want to register for an account using my email address so that I can access the platform features.",
-      acceptanceCriteria: [
-        "User can enter email and password on registration form",
-        "System validates email format and password strength", 
-        "Verification email is sent upon successful registration",
-        "User can complete registration by clicking verification link",
-        "Error messages are displayed for invalid inputs"
-      ],
-      storyPoints: 5,
-      status: 'ready' as const
-    };
+    try {
+      setIsGenerating(true);
+      setShowRawInput(false);
+      setSavedInput(rawInput);
+      setSavedCustomPrompt(customPrompt);
+      
+      onStoryGenerated?.();
+      
+      // Realistic generation delay
+      await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 1000));
+      
+      // Generate using mock service
+      const mockResult = generateMockStory(rawInput, customPrompt);
+      
+      const generatedStory = {
+        ...story,
+        title: mockResult.title,
+        description: mockResult.description,
+        acceptanceCriteria: mockResult.acceptanceCriteria,
+        storyPoints: mockResult.storyPoints,
+        status: 'ready' as const
+      };
 
-    // Generate comprehensive test data
-    const generatedTestData = {
-      userInputs: [
-        "test@example.com / SecurePass123!",
-        "invalid-email / weak",
-        "existing@user.com / AnotherPass456!",
-        "user+tag@domain.co.uk / ComplexP@ss1"
-      ],
-      edgeCases: [
-        "Email already exists in system",
-        "Network timeout during verification",
-        "Malformed email verification link",
-        "Special characters in email address",
-        "International domain names"
-      ],
-      apiResponses: [
-        { status: 201, data: { userId: "usr_123", verified: false } },
-        { status: 400, error: "Email already registered" },
-        { status: 422, error: "Invalid password format" },
-        { status: 503, error: "Email service unavailable" }
-      ],
-      codeSnippets: []
-    };
+      const generatedTestData = {
+        userInputs: mockResult.testData.userInputs,
+        edgeCases: mockResult.testData.edgeCases,
+        apiResponses: mockResult.testData.apiResponses,
+        codeSnippets: mockResult.testData.codeSnippets
+      };
 
-    setStory(generatedStory);
-    setTestData(generatedTestData);
-    setOriginalTitle(generatedStory.title);
-    setOriginalDescription(generatedStory.description);
-    setDirtyCriteria(false);
-    setIsGenerating(false);
+      setStory(generatedStory);
+      setTestData(generatedTestData);
+      setOriginalTitle(generatedStory.title);
+      setOriginalDescription(generatedStory.description);
+      setDirtyCriteria(false);
+      
+      // Set dev notes if available
+      if (mockResult.devNotes && mockResult.testData.codeSnippets.length > 0) {
+        setHasDevNotes(true);
+        setDevNotesOpen(true);
+      }
 
-    // Auto-save version after generation - always save as "Initial Generation"
-    const storyContent = {
-      title: generatedStory.title,
-      description: generatedStory.description,
-      acceptanceCriteria: generatedStory.acceptanceCriteria,
-      storyPoints: generatedStory.storyPoints,
-      testData: generatedTestData
-    };
-    saveVersion(storyContent, "Initial Generation");
-    setLastAutoSaveContent(JSON.stringify(storyContent));
+      // Auto-save version after generation
+      const storyContent = {
+        title: generatedStory.title,
+        description: generatedStory.description,
+        acceptanceCriteria: generatedStory.acceptanceCriteria,
+        storyPoints: generatedStory.storyPoints,
+        testData: generatedTestData
+      };
+      saveVersion(storyContent, "Initial Generation");
+      setLastAutoSaveContent(JSON.stringify(storyContent));
+      
+      toast({
+        title: "Story Generated",
+        description: "Your user story has been created successfully.",
+      });
+    } catch (error) {
+      console.error("Error generating story:", error);
+      toast({
+        title: "Generation Failed",
+        description: "Failed to generate story. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const generateDevNotes = async () => {
@@ -360,57 +362,63 @@ export function StoryBuilder({
   };
 
   const newStory = () => {
-    setStory({
-      id: `US-${String(Date.now()).slice(-3)}`,
-      title: "",
-      description: "",
-      acceptanceCriteria: [],
-      storyPoints: 0,
-      status: 'draft',
-      tags: []
-    });
-    setTestData({
-      userInputs: [],
-      edgeCases: [],
-      apiResponses: [],
-      codeSnippets: []
-    });
-    setRawInput("");
-    setCustomPrompt("");
-    setSavedInput("");
-    setSavedCustomPrompt("");
-    setUploadedFiles([]);
-    setShowRawInput(true);
-    setHasDevNotes(false);
-    setDevNotesOpen(false);
-    setOriginalTitle("");
-    setOriginalDescription("");
-    setDirtyCriteria(false);
-    setIsGenerating(false);
-    setIsGeneratingDevNotes(false);
-    setAppliedFieldId(null);
-    // Reset test data panels
-    setTestDataPanels({
-      userInputs: true,
-      edgeCases: true,
-      apiMocks: true,
-      codeSnippets: true
-    });
-    
-    // Clear version history and auto-save state
-    clearVersions();
-    setLastAutoSaveContent('');
-    
-    // Clear any pending auto-save timers
-    if (autoSaveTimeoutRef.current) {
-      clearTimeout(autoSaveTimeoutRef.current);
+    try {
+      setStory({
+        id: `US-${String(Date.now()).slice(-3)}`,
+        title: "",
+        description: "",
+        acceptanceCriteria: [],
+        storyPoints: 0,
+        status: 'draft',
+        tags: []
+      });
+      setTestData({
+        userInputs: [],
+        edgeCases: [],
+        apiResponses: [],
+        codeSnippets: []
+      });
+      setRawInput("");
+      setCustomPrompt("");
+      setSavedInput("");
+      setSavedCustomPrompt("");
+      setUploadedFiles([]);
+      setShowRawInput(true);
+      setHasDevNotes(false);
+      setDevNotesOpen(false);
+      setOriginalTitle("");
+      setOriginalDescription("");
+      setDirtyCriteria(false);
+      setIsGenerating(false);
+      setIsGeneratingDevNotes(false);
+      setAppliedFieldId(null);
+      setTestDataPanels({
+        userInputs: true,
+        edgeCases: true,
+        apiMocks: true,
+        codeSnippets: true
+      });
+      
+      clearVersions();
+      setLastAutoSaveContent('');
+      
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+      if (autoSaveIntervalRef.current) {
+        clearInterval(autoSaveIntervalRef.current);
+      }
+      
+      onNewStory?.();
+    } catch (error) {
+      console.error("Error resetting story:", error);
+      toast({
+        title: "Reset Failed",
+        description: "Failed to reset. Refreshing page...",
+        variant: "destructive",
+      });
+      setTimeout(() => window.location.reload(), 1000);
     }
-    if (autoSaveIntervalRef.current) {
-      clearInterval(autoSaveIntervalRef.current);
-    }
-    
-    // Call parent reset handler
-    onNewStory?.();
   };
 
   const handleNewStoryClick = () => {
@@ -496,31 +504,68 @@ export function StoryBuilder({
     console.log(`Refreshing ${section} test data`);
   };
 
-  const handleApplySuggestion = (type: string, content: string) => {
+  const handleApplySuggestion = (type: string, content: any) => {
     let updatedStory = story;
     let updatedTestData = testData;
     let appliedField = '';
 
-    // Apply suggestion based on type
+    // Handle different suggestion types
     if (type === 'testing') {
       // Add to edge cases
+      const edgeCase = typeof content === 'string' ? content.split('.')[0] : content;
       updatedTestData = {
         ...testData,
-        edgeCases: [...testData.edgeCases, content.split('.')[0]]
+        edgeCases: [...testData.edgeCases, edgeCase]
       };
       setTestData(updatedTestData);
       appliedField = 'edge-cases';
     } else if (type === 'criteria') {
-      // Add to acceptance criteria
+      // Handle add or remove AC
+      if (typeof content === 'object' && content.action === 'remove') {
+        const index = content.index === -1 ? story.acceptanceCriteria.length - 1 : content.index;
+        updatedStory = {
+          ...story,
+          acceptanceCriteria: story.acceptanceCriteria.filter((_, i) => i !== index)
+        };
+        setStory(updatedStory);
+        appliedField = 'acceptance-criteria';
+      } else {
+        // Add new AC
+        const newCriterion = typeof content === 'string' ? content.split('.')[0] : content;
+        updatedStory = {
+          ...story,
+          acceptanceCriteria: [...story.acceptanceCriteria, newCriterion]
+        };
+        setStory(updatedStory);
+        appliedField = 'acceptance-criteria';
+      }
+    } else if (type === 'points') {
+      // Update story points
+      const points = typeof content === 'number' ? content : parseInt(content);
       updatedStory = {
         ...story,
-        acceptanceCriteria: [...story.acceptanceCriteria, content.split('.')[0]]
+        storyPoints: points
       };
       setStory(updatedStory);
-      appliedField = 'acceptance-criteria';
+      appliedField = 'story-points';
     } else if (type === 'story') {
-      // Update story points if content mentions points
-      if (content.toLowerCase().includes('point')) {
+      // Update story fields (title or description)
+      if (content.field === 'title') {
+        updatedStory = {
+          ...story,
+          title: content.suggestion || content
+        };
+        setStory(updatedStory);
+        appliedField = 'story-title';
+      } else if (content.field === 'description') {
+        updatedStory = {
+          ...story,
+          description: content.suggestion || content
+        };
+        setStory(updatedStory);
+        appliedField = 'story-description';
+      } else if (typeof content === 'string' && content.toLowerCase().includes('point')) {
+        // Legacy: extract points from string
         const pointsMatch = content.match(/(\d+)\s*point/);
         if (pointsMatch) {
           updatedStory = {
@@ -531,6 +576,17 @@ export function StoryBuilder({
           appliedField = 'story-points';
         }
       }
+    } else if (type === 'dev-notes') {
+      // Add code snippet
+      const codeSnippet = typeof content === 'string' ? content : content.suggestion || content;
+      updatedTestData = {
+        ...testData,
+        codeSnippets: [...testData.codeSnippets, codeSnippet]
+      };
+      setTestData(updatedTestData);
+      setHasDevNotes(true);
+      setDevNotesOpen(true);
+      appliedField = 'code-snippets';
     }
 
     // Auto-save version after applying suggestion
@@ -543,8 +599,13 @@ export function StoryBuilder({
         storyPoints: updatedStory.storyPoints,
         testData: updatedTestData
       };
-      saveVersion(storyContent, "Refinement Applied");
+      saveVersion(storyContent, "AI Refinement Applied");
       setLastAutoSaveContent(JSON.stringify(storyContent));
+      
+      toast({
+        title: "Suggestion Applied",
+        description: "Story updated successfully.",
+      });
     }
   };
 
