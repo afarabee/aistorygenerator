@@ -24,26 +24,27 @@ import {
   ArrowDown
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { generateMockChatResponse } from "@/lib/mockChatService";
 
 interface ChatMessage {
   id: string;
   type: 'user' | 'ai';
   content: string;
   timestamp: Date;
-  context?: 'story' | 'criteria' | 'testing' | 'dev-notes';
-  suggestion?: string;
+  context?: 'story' | 'criteria' | 'testing' | 'dev-notes' | 'points';
+  suggestion?: any;
   hasUserFacingSuggestion?: boolean;
 }
 
-
 interface ChatPanelProps {
-  onApplySuggestion?: (type: string, content: string) => void;
+  onApplySuggestion?: (type: string, content: any) => void;
   onUndoSuggestion?: () => void;
   isHorizontallyCollapsed?: boolean;
   onHorizontalToggle?: () => void;
+  currentStory?: any;
 }
 
-export function ChatPanel({ onApplySuggestion, onUndoSuggestion, isHorizontallyCollapsed = false, onHorizontalToggle }: ChatPanelProps = {}) {
+export function ChatPanel({ onApplySuggestion, onUndoSuggestion, isHorizontallyCollapsed = false, onHorizontalToggle, currentStory }: ChatPanelProps = {}) {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: '1',
@@ -130,173 +131,30 @@ export function ChatPanel({ onApplySuggestion, onUndoSuggestion, isHorizontallyC
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const userInput = inputValue;
     setInputValue("");
     setIsTyping(true);
 
-    // Simulate AI response with test data updates
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    // Realistic typing delay
+    await new Promise(resolve => setTimeout(resolve, 800 + Math.random() * 700));
 
-    // Generate response with structured JSON format
-    const responseData = generateContextualResponse(inputValue);
+    // Generate mock response using the new service
+    const mockResponse = generateMockChatResponse(userInput, currentStory);
     
     const aiResponse: ChatMessage = {
       id: (Date.now() + 1).toString(),
       type: 'ai',
-      content: responseData.reply,
+      content: mockResponse.text,
       timestamp: new Date(),
-      context: detectContext(inputValue),
-      suggestion: responseData.suggestion || undefined,
-      hasUserFacingSuggestion: responseData.hasUserFacingSuggestion || false
+      context: mockResponse.context.type,
+      suggestion: mockResponse.context.suggestion,
+      hasUserFacingSuggestion: !!mockResponse.context.suggestion
     };
-
 
     setMessages(prev => [...prev, aiResponse]);
     setIsTyping(false);
   };
 
-  const generateContextualResponse = (input: string): { reply: string; suggestion: string; hasUserFacingSuggestion?: boolean } => {
-    const lowerInput = input.toLowerCase().trim();
-    
-    // Detect vague, incomplete, or nonsense input
-    const isVagueInput = (
-      lowerInput.length < 3 ||
-      /^[dfg]+$|^[hjk]+$|^[abc]+$|^test+$|^help+$|^fix+$|^more+$/.test(lowerInput) ||
-      lowerInput === "ac" || lowerInput === "more details" || lowerInput === "help help help" ||
-      /^(.)\1{3,}$/.test(lowerInput) || // repetitive characters
-      /^[!@#$%^&*()]+$/.test(lowerInput) // only special characters
-    );
-
-    if (isVagueInput) {
-      return generateMockResponse();
-    }
-    
-    if (lowerInput.includes('edge case') || lowerInput.includes('error')) {
-      return {
-        reply: "I've identified a new edge case and added it to your test data. For the email validation, we should also consider users entering special characters like '+' or international characters. Would you like me to add acceptance criteria for internationalization?",
-        suggestion: "User submits email with special characters like + or international domains",
-        hasUserFacingSuggestion: false // This only updates backend test data
-      };
-    }
-    
-    if (lowerInput.includes('points') || lowerInput.includes('estimate')) {
-      return {
-        reply: "Based on the complexity of email verification and the need for robust validation, I'd recommend keeping this at 5 story points. This accounts for frontend validation, backend API integration, and email service setup. Should we break this into smaller stories?",
-        suggestion: "Adjust story points to 8 considering email service integration complexity",
-        hasUserFacingSuggestion: true // This updates visible story points
-      };
-    }
-    
-    if (lowerInput.includes('criteria') || lowerInput.includes('acceptance')) {
-      return {
-        reply: "I can strengthen the acceptance criteria. Would you like me to add specific validation rules for password complexity, or focus on the email verification flow? I can also add criteria for accessibility and error handling.",
-        suggestion: "System displays real-time password strength indicator with specific requirements",
-        hasUserFacingSuggestion: true // This updates visible acceptance criteria
-      };
-    }
-
-    if (lowerInput.includes('dev') || lowerInput.includes('technical') || lowerInput.includes('implementation')) {
-      return {
-        reply: "I can provide technical implementation guidance. Based on your current story, I recommend considering OAuth integration for social login options and implementing rate limiting for failed attempts. Should I add these technical considerations to your developer notes?",
-        suggestion: "Add rate limiting (5 attempts per minute) and OAuth integration for Google/GitHub login",
-        hasUserFacingSuggestion: true // This updates visible dev notes
-      };
-    }
-
-    return generateMockResponse();
-  };
-
-  const generateMockResponse = (): { reply: string; suggestion: string; hasUserFacingSuggestion: boolean } => {
-    const mockResponses = [
-      // Title suggestions
-      {
-        reply: "The story title could be more specific. Want me to make it clearer what the user actually does?",
-        suggestion: "User Registration with Email Verification",
-        hasUserFacingSuggestion: true
-      },
-      {
-        reply: "Let's make the title more action-oriented. How about emphasizing the verification step?",
-        suggestion: "Complete Account Registration and Email Verification",
-        hasUserFacingSuggestion: true
-      },
-      // Description improvements
-      {
-        reply: "Do you think we should tighten up the description? I can help make it clearer for the dev team. Anything specific you want to change about the current wording?",
-        suggestion: "User can create an account by providing email and password, receives automated verification email within 30 seconds, and must verify email address to complete registration process",
-        hasUserFacingSuggestion: true
-      },
-      {
-        reply: "The description could be more detailed. Want me to add specifics about the verification flow?",
-        suggestion: "User enters email and secure password, system validates inputs in real-time, sends verification email with expiring link, and activates account upon successful verification",
-        hasUserFacingSuggestion: true
-      },
-      // Acceptance criteria suggestions
-      {
-        reply: "Want to beef up the acceptance criteria? I'm thinking we could add specific validation rules to make this more testable. Should I throw in some edge cases for email validation while we're at it?",
-        suggestion: "System validates email format using RFC 5322 standard and displays specific error messages for invalid formats",
-        hasUserFacingSuggestion: true
-      },
-      {
-        reply: "Sure! Want to adjust the criteria to be more specific? Clear success metrics help everyone know when we're done. Should I look at security considerations next?",
-        suggestion: "User receives confirmation email within 30 seconds and verification link expires after 24 hours",
-        hasUserFacingSuggestion: true
-      },
-      {
-        reply: "The acceptance criteria could use some password requirements. Mind if I add those?",
-        suggestion: "Password must contain at least 8 characters, one uppercase letter, one number, and one special character",
-        hasUserFacingSuggestion: true
-      },
-      // Story points adjustments
-      {
-        reply: "Happy to help with the story points! This looks more complex than it first appeared — email verification plus validation adds up. Think we should bump it to 8 points?",
-        suggestion: "8",
-        hasUserFacingSuggestion: true
-      },
-      {
-        reply: "Story points seem about right, but considering the email service integration, maybe we need to adjust slightly?",
-        suggestion: "5",
-        hasUserFacingSuggestion: true
-      },
-      {
-        reply: "This registration flow has quite a bit of complexity. Email validation, password hashing, verification emails... thinking this might be closer to 13 points?",
-        suggestion: "13",
-        hasUserFacingSuggestion: true
-      },
-      // Dev notes
-      {
-        reply: "Want to add some technical notes? I'm thinking we should mention API rate limiting and maybe OAuth options. Let me know if you want me to dive deeper into the implementation details.",
-        suggestion: "Add rate limiting (5 attempts per minute) and OAuth integration for Google/GitHub login",
-        hasUserFacingSuggestion: true
-      },
-      {
-        reply: "Got it — let's look at the technical side. This registration flow could use better error handling and user feedback. Want me to add some specs for password hashing and session management?",
-        suggestion: "Implement bcrypt password hashing with salt rounds of 12 and JWT session tokens with 24-hour expiration",
-        hasUserFacingSuggestion: true
-      },
-      // Non-user-facing suggestions (test data only)
-      {
-        reply: "Let me add a couple edge cases for this registration flow. Users love trying weird email formats and international domains. Need help adding accessibility and internationalization tests too?",
-        suggestion: "User attempts registration with disposable email addresses or international domain extensions",
-        hasUserFacingSuggestion: false
-      },
-      {
-        reply: "Need help adding edge cases? I can think of a few scenarios that might trip up users — like what happens when their email provider blocks our verification emails. Should I add those?",
-        suggestion: "Handle email delivery failures and provide alternative verification methods",
-        hasUserFacingSuggestion: false
-      }
-    ];
-
-    // Randomize response to show variety
-    const randomIndex = Math.floor(Math.random() * mockResponses.length);
-    return mockResponses[randomIndex];
-  };
-
-  const detectContext = (input: string): ChatMessage['context'] => {
-    const lowerInput = input.toLowerCase();
-    if (lowerInput.includes('test') || lowerInput.includes('edge')) return 'testing';
-    if (lowerInput.includes('code') || lowerInput.includes('technical')) return 'dev-notes';
-    if (lowerInput.includes('criteria') || lowerInput.includes('acceptance')) return 'criteria';
-    return 'story';
-  };
 
   const ContextIcon = ({ context }: { context?: ChatMessage['context'] }) => {
     switch (context) {
@@ -312,18 +170,18 @@ export function ChatPanel({ onApplySuggestion, onUndoSuggestion, isHorizontallyC
   };
 
   const applySuggestion = (message: ChatMessage) => {
-    const suggestionType = message.context || 'story';
+    if (!message.suggestion || !message.context) return;
     
-    // Apply the suggestion to the appropriate panel
-    if (onApplySuggestion && message.suggestion) {
-      onApplySuggestion(suggestionType, message.suggestion);
-      setLastAppliedSuggestion(message);
+    setLastAppliedSuggestion(message);
+    
+    let handlerType = message.context;
+    let content = message.suggestion;
+    
+    if (typeof content === 'object' && content.field) {
+      handlerType = content.field === 'title' || content.field === 'description' ? 'story' : message.context;
     }
     
-    toast({
-      title: "Suggestion Applied",
-      description: `${suggestionType.replace('-', ' ')} has been updated with AI suggestions.`,
-    });
+    onApplySuggestion?.(handlerType, content);
   };
 
   const undoLastSuggestion = () => {
