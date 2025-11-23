@@ -81,6 +81,7 @@ interface StoryBuilderProps {
   onStoryGenerated?: () => void;
   onVersionsChange?: (versions: StoryVersion[], currentContent: any) => void;
   onSetNewStoryHandler?: (handler: () => void) => void;
+  onStoryUpdate?: (story: any) => void;
 }
 
 export function StoryBuilder({ 
@@ -93,7 +94,8 @@ export function StoryBuilder({
   storyGenerated = false, 
   onStoryGenerated,
   onVersionsChange,
-  onSetNewStoryHandler 
+  onSetNewStoryHandler,
+  onStoryUpdate
 }: StoryBuilderProps = {}) {
   const { toast } = useToast();
   const { versions, saveVersion, getVersion, clearVersions } = useVersionHistory();
@@ -306,6 +308,9 @@ export function StoryBuilder({
       setOriginalDescription(generatedStory.description);
       setDirtyCriteria(false);
       
+      // Notify parent of story update
+      onStoryUpdate?.(generatedStory);
+      
       // Set dev notes if available
       if (mockResult.devNotes && mockResult.testData.codeSnippets.length > 0) {
         setHasDevNotes(true);
@@ -363,15 +368,17 @@ export function StoryBuilder({
 
   const newStory = () => {
     try {
-      setStory({
+      const resetStory = {
         id: `US-${String(Date.now()).slice(-3)}`,
         title: "",
         description: "",
         acceptanceCriteria: [],
         storyPoints: 0,
-        status: 'draft',
+        status: 'draft' as const,
         tags: []
-      });
+      };
+      
+      setStory(resetStory);
       setTestData({
         userInputs: [],
         edgeCases: [],
@@ -408,6 +415,9 @@ export function StoryBuilder({
       if (autoSaveIntervalRef.current) {
         clearInterval(autoSaveIntervalRef.current);
       }
+      
+      // Notify parent of story reset
+      onStoryUpdate?.(null);
       
       onNewStory?.();
     } catch (error) {
@@ -601,6 +611,9 @@ export function StoryBuilder({
       };
       saveVersion(storyContent, "AI Refinement Applied");
       setLastAutoSaveContent(JSON.stringify(storyContent));
+      
+      // Notify parent of story update
+      onStoryUpdate?.(updatedStory);
       
       toast({
         title: "Suggestion Applied",

@@ -13,6 +13,15 @@ export function generateMockChatResponse(
   userInput: string,
   currentStory: any
 ): MockChatResponse {
+  // Provide safe defaults if currentStory is undefined
+  if (!currentStory) {
+    currentStory = { 
+      title: 'User Story', 
+      description: 'As a user, I want functionality so that I achieve value.',
+      acceptanceCriteria: []
+    };
+  }
+  
   const input = userInput.toLowerCase();
   
   // Detect action and intent
@@ -78,7 +87,7 @@ export function generateMockChatResponse(
       text: "I'll make the description more concise while keeping the key points.",
       context: {
         type: 'story',
-        suggestion: currentStory.description.split('.')[0] + '. This enables better user experience and efficiency.',
+        suggestion: (currentStory?.description || 'The user story').split('.')[0] + '. This enables better user experience and efficiency.',
         field: 'description'
       }
     };
@@ -89,7 +98,7 @@ export function generateMockChatResponse(
       text: "I'll add more technical details to the description.",
       context: {
         type: 'story',
-        suggestion: currentStory.description + ' This includes comprehensive input validation, secure data handling, error recovery mechanisms, and audit logging for compliance.',
+        suggestion: (currentStory?.description || 'This feature') + ' This includes comprehensive input validation, secure data handling, error recovery mechanisms, and audit logging for compliance.',
         field: 'description'
       }
     };
@@ -100,7 +109,7 @@ export function generateMockChatResponse(
       text: "Here's a more descriptive title that better captures the user value.",
       context: {
         type: 'story',
-        suggestion: 'Enhanced ' + currentStory.title + ' with Advanced Features',
+        suggestion: 'Enhanced ' + (currentStory?.title || 'User Story') + ' with Advanced Features',
         field: 'title'
       }
     };
@@ -194,17 +203,170 @@ export function generateMockChatResponse(
     };
   }
   
-  // General helpful responses without suggestions
-  if (input.includes('help') || input.includes('suggest') || input.includes('improve')) {
-    return {
-      text: "I can help you refine this story in several ways:\n\n• Add or remove acceptance criteria\n• Adjust story point estimates\n• Clarify the description\n• Add edge cases for testing\n• Provide implementation guidance\n\nWhat would you like to focus on?",
-      context: { type: 'story' }
-    };
-  }
-  
-  // Default contextual response
-  return {
-    text: "I understand you want to refine the story. Could you be more specific about what you'd like to change? For example:\n\n• \"Add an acceptance criterion for security\"\n• \"Increase story points to 8\"\n• \"Add edge cases for testing\"\n• \"Simplify the description\"",
-    context: { type: 'story' }
-  };
+  // Random suggestion generator for any input that doesn't match keywords
+  const randomSuggestions: MockChatResponse[] = [
+    {
+      text: "I'll add a validation-focused acceptance criterion.",
+      context: {
+        type: 'criteria',
+        suggestion: 'System validates all required fields with real-time feedback and prevents submission of invalid data',
+        field: 'acceptanceCriteria'
+      }
+    },
+    {
+      text: "Let me suggest a security-focused acceptance criterion.",
+      context: {
+        type: 'criteria',
+        suggestion: 'All sensitive data is encrypted in transit and at rest, with secure session management',
+        field: 'acceptanceCriteria'
+      }
+    },
+    {
+      text: "I recommend adjusting story points based on complexity.",
+      context: {
+        type: 'points',
+        suggestion: Math.floor(Math.random() * 6) + 3, // Random 3-8
+        field: 'storyPoints'
+      }
+    },
+    {
+      text: "Here's an important edge case to consider.",
+      context: {
+        type: 'testing',
+        suggestion: 'User attempts operation with expired session or invalid authentication token',
+        field: 'edgeCases'
+      }
+    },
+    {
+      text: "I'll add a performance requirement.",
+      context: {
+        type: 'criteria',
+        suggestion: 'All user actions receive feedback within 200ms with loading indicators for operations exceeding 1 second',
+        field: 'acceptanceCriteria'
+      }
+    },
+    {
+      text: "Let's ensure accessibility compliance.",
+      context: {
+        type: 'criteria',
+        suggestion: 'Interface supports keyboard navigation, screen readers, and meets WCAG 2.1 AA standards',
+        field: 'acceptanceCriteria'
+      }
+    },
+    {
+      text: "I'll add mobile responsiveness criteria.",
+      context: {
+        type: 'criteria',
+        suggestion: 'Interface adapts seamlessly to mobile devices with touch-friendly controls and responsive layout',
+        field: 'acceptanceCriteria'
+      }
+    },
+    {
+      text: "Here's a boundary testing scenario.",
+      context: {
+        type: 'testing',
+        suggestion: 'System handles maximum data limits, empty states, and concurrent user actions gracefully',
+        field: 'edgeCases'
+      }
+    },
+    {
+      text: "I recommend increasing complexity for this feature.",
+      context: {
+        type: 'points',
+        suggestion: 8,
+        field: 'storyPoints'
+      }
+    },
+    {
+      text: "Let's add error handling requirements.",
+      context: {
+        type: 'criteria',
+        suggestion: 'All errors display user-friendly messages with recovery options and are logged for debugging',
+        field: 'acceptanceCriteria'
+      }
+    },
+    {
+      text: "Here's a data integrity edge case.",
+      context: {
+        type: 'testing',
+        suggestion: 'Verify data consistency during network interruptions and partial failures',
+        field: 'edgeCases'
+      }
+    },
+    {
+      text: "I'll add API integration details.",
+      context: {
+        type: 'dev-notes',
+        suggestion: `// API Error Handling\ntry {\n  const response = await api.call();\n  handleSuccess(response);\n} catch (error) {\n  logError(error);\n  showUserFeedback();\n}`,
+        field: 'codeSnippets'
+      }
+    },
+    {
+      text: "Let's ensure data privacy compliance.",
+      context: {
+        type: 'criteria',
+        suggestion: 'System complies with GDPR/CCPA requirements including data export, deletion, and consent management',
+        field: 'acceptanceCriteria'
+      }
+    },
+    {
+      text: "This seems like a medium complexity task.",
+      context: {
+        type: 'points',
+        suggestion: 5,
+        field: 'storyPoints'
+      }
+    },
+    {
+      text: "I'll add a network resilience edge case.",
+      context: {
+        type: 'testing',
+        suggestion: 'Test behavior under slow network conditions, timeouts, and offline scenarios',
+        field: 'edgeCases'
+      }
+    },
+    {
+      text: "Let's add cross-browser compatibility.",
+      context: {
+        type: 'criteria',
+        suggestion: 'Interface functions correctly in Chrome, Firefox, Safari, and Edge (last 2 versions)',
+        field: 'acceptanceCriteria'
+      }
+    },
+    {
+      text: "Here's a state management consideration.",
+      context: {
+        type: 'dev-notes',
+        suggestion: `// State Management\nconst [state, setState] = useState(initialState);\n\nuseEffect(() => {\n  // Sync with backend\n  fetchData().then(setState);\n}, [dependencies]);`,
+        field: 'codeSnippets'
+      }
+    },
+    {
+      text: "I recommend simplifying this to reduce scope.",
+      context: {
+        type: 'points',
+        suggestion: 3,
+        field: 'storyPoints'
+      }
+    },
+    {
+      text: "Let's test internationalization edge cases.",
+      context: {
+        type: 'testing',
+        suggestion: 'Verify handling of special characters, right-to-left languages, and varying date/number formats',
+        field: 'edgeCases'
+      }
+    },
+    {
+      text: "I'll add monitoring and observability.",
+      context: {
+        type: 'criteria',
+        suggestion: 'System logs critical events, tracks performance metrics, and provides debugging information',
+        field: 'acceptanceCriteria'
+      }
+    }
+  ];
+
+  // Return random suggestion for any unmatched input (including gibberish)
+  return randomSuggestions[Math.floor(Math.random() * randomSuggestions.length)];
 }
