@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import { 
   Send, 
@@ -45,6 +46,30 @@ interface ChatPanelProps {
 }
 
 export function ChatPanel({ onApplySuggestion, onUndoSuggestion, isHorizontallyCollapsed = false, onHorizontalToggle, currentStory }: ChatPanelProps = {}) {
+  // Helper function to format suggestion preview
+  const getPreviewMessage = (message: ChatMessage): string => {
+    const context = message.context;
+    const suggestion = message.suggestion;
+    
+    if (!context) return "Apply this suggestion";
+    
+    switch (context) {
+      case 'criteria':
+        return `Add acceptance criterion: "${typeof suggestion === 'string' ? suggestion.substring(0, 80) + (suggestion.length > 80 ? '...' : '') : suggestion}"`;
+      case 'points':
+        return `Change story points to: ${suggestion}`;
+      case 'testing':
+        return `Add test scenario: "${typeof suggestion === 'string' ? suggestion.substring(0, 80) + (suggestion.length > 80 ? '...' : '') : suggestion}"`;
+      case 'dev-notes':
+        return `Add developer note: "${typeof suggestion === 'string' ? suggestion.substring(0, 60) + (suggestion.length > 60 ? '...' : '') : suggestion}"`;
+      case 'story':
+        return `Update story description`;
+      default:
+        return "Apply this suggestion";
+    }
+  };
+
+
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: '1',
@@ -281,15 +306,24 @@ export function ChatPanel({ onApplySuggestion, onUndoSuggestion, isHorizontallyC
                     </span>
                     <div className="flex gap-1">
                       {message.type === 'ai' && message.suggestion && String(message.suggestion).trim() && message.hasUserFacingSuggestion && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => applySuggestion(message)}
-                          className="gap-1 text-xs h-6"
-                        >
-                          <CheckCircle className="h-3 w-3" />
-                          Apply Suggestion
-                        </Button>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => applySuggestion(message)}
+                                className="gap-1 text-xs h-6"
+                              >
+                                <CheckCircle className="h-3 w-3" />
+                                Apply Suggestion
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="max-w-xs">
+                              <p className="text-xs">{getPreviewMessage(message)}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       )}
                       {lastAppliedSuggestion && (
                         <Button
