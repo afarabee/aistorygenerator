@@ -13,6 +13,7 @@ const StoryGenerator = () => {
   // Refs to store handlers from StoryBuilder
   const applySuggestionRef = useRef<((type: string, content: any) => void) | null>(null);
   const undoSuggestionRef = useRef<(() => void) | null>(null);
+  const restartStoryRef = useRef<(() => void) | null>(null);
 
   const handleStoryGenerated = () => {
     setStoryGenerated(true);
@@ -45,9 +46,22 @@ const StoryGenerator = () => {
     console.log('Undo requested from ChatPanel');
   };
 
+  const handleRestartStory = () => {
+    if (restartStoryRef.current) {
+      restartStoryRef.current();
+    }
+  };
+
   return (
     <AppLayout
-      sidebarContent={<ProjectSidebar />}
+      sidebarContent={
+        <ProjectSidebar 
+          showTestData={showTestData}
+          onToggleTestData={handleToggleTestData}
+          onNewStory={handleNewStory}
+          onRestartStory={handleRestartStory}
+        />
+      }
       chatContent={
         <ChatPanel 
           key={storyGenerated ? 'story' : 'no-story'} 
@@ -69,6 +83,9 @@ const StoryGenerator = () => {
         onStoryUpdate={setStory}
         onSetApplySuggestionHandler={(applyHandler) => {
           applySuggestionRef.current = applyHandler;
+        }}
+        onSetRestartStoryHandler={(restartHandler) => {
+          restartStoryRef.current = restartHandler;
         }}
       />
     </AppLayout>

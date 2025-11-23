@@ -41,6 +41,7 @@ interface ProjectSidebarProps {
   showTestData?: boolean;
   onToggleTestData?: () => void;
   onNewStory?: () => void;
+  onRestartStory?: () => void;
   versions?: StoryVersion[];
   currentStoryContent?: {
     title: string;
@@ -55,7 +56,8 @@ interface ProjectSidebarProps {
 export function ProjectSidebar({ 
   showTestData = false, 
   onToggleTestData, 
-  onNewStory, 
+  onNewStory,
+  onRestartStory, 
   versions = [], 
   currentStoryContent,
   onRestoreVersion 
@@ -185,7 +187,12 @@ export function ProjectSidebar({
                 <Plus className="h-4 w-4" />
                 New User Story
               </Button>
-              <Button variant="outline" size="sm" className="w-full justify-start gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="w-full justify-start gap-2"
+                onClick={onRestartStory}
+              >
                 <History className="h-4 w-4" />
                 Restart Story
               </Button>
@@ -196,7 +203,7 @@ export function ProjectSidebar({
                 onClick={onToggleTestData}
               >
                 <Eye className="h-4 w-4" />
-                Show Test Data
+                {showTestData ? 'Hide Test Data' : 'Show Test Data'}
               </Button>
             </div>
           </div>
