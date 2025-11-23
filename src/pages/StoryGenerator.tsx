@@ -14,6 +14,7 @@ const StoryGenerator = () => {
   const applySuggestionRef = useRef<((type: string, content: any) => void) | null>(null);
   const undoSuggestionRef = useRef<(() => void) | null>(null);
   const restartStoryRef = useRef<(() => void) | null>(null);
+  const newStoryRef = useRef<(() => void) | null>(null);
 
   const handleStoryGenerated = () => {
     setStoryGenerated(true);
@@ -21,6 +22,11 @@ const StoryGenerator = () => {
   };
 
   const handleNewStory = () => {
+    // Call StoryBuilder's internal reset function first
+    if (newStoryRef.current) {
+      newStoryRef.current();
+    }
+    // Then reset parent state
     setStoryGenerated(false);
     setShowTestData(false);
     setShowChat(false);
@@ -75,7 +81,6 @@ const StoryGenerator = () => {
       <StoryBuilder 
         storyGenerated={storyGenerated}
         onStoryGenerated={handleStoryGenerated}
-        onNewStory={handleNewStory}
         showChat={showChat}
         onToggleChat={handleToggleChat}
         showTestData={showTestData}
@@ -86,6 +91,9 @@ const StoryGenerator = () => {
         }}
         onSetRestartStoryHandler={(restartHandler) => {
           restartStoryRef.current = restartHandler;
+        }}
+        onSetNewStoryHandler={(newStoryHandler) => {
+          newStoryRef.current = newStoryHandler;
         }}
       />
     </AppLayout>
