@@ -74,6 +74,7 @@ interface StoryBuilderProps {
   showChat?: boolean;
   onToggleChat?: () => void;
   onSetApplySuggestionHandler?: (handler: (type: string, content: string) => void, restoreHandler?: (version: StoryVersion) => void) => void;
+  onSetRestartStoryHandler?: (handler: () => void) => void;
   showTestData?: boolean;
   onToggleTestData?: () => void;
   onNewStory?: () => void;
@@ -87,7 +88,8 @@ interface StoryBuilderProps {
 export function StoryBuilder({ 
   showChat = false, 
   onToggleChat, 
-  onSetApplySuggestionHandler, 
+  onSetApplySuggestionHandler,
+  onSetRestartStoryHandler, 
   showTestData = false, 
   onToggleTestData, 
   onNewStory, 
@@ -154,6 +156,13 @@ export function StoryBuilder({
       onSetNewStoryHandler(handleNewStoryClick);
     }
   }, [onSetNewStoryHandler]);
+
+  // Register the restart story handler
+  useEffect(() => {
+    if (onSetRestartStoryHandler) {
+      onSetRestartStoryHandler(restartStory);
+    }
+  }, [onSetRestartStoryHandler]);
 
   // Notify parent component about version changes
   useEffect(() => {
