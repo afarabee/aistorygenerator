@@ -291,40 +291,19 @@ const storyTemplates: MockStoryTemplate[] = [
 ];
 
 export function generateMockStory(rawInput: string, customPrompt?: string) {
-  const keywords = extractKeywords(rawInput + ' ' + (customPrompt || ''));
+  // Randomly select a template for demo purposes (no keyword matching needed)
+  const randomIndex = Math.floor(Math.random() * storyTemplates.length);
+  const selectedTemplate = storyTemplates[randomIndex];
   
-  // Find best matching template
-  let bestMatch = storyTemplates[0];
-  let maxMatches = 0;
-  
-  for (const template of storyTemplates) {
-    const matches = template.keywords.filter(keyword => 
-      keywords.some(k => k.includes(keyword) || keyword.includes(k))
-    ).length;
-    
-    if (matches > maxMatches) {
-      maxMatches = matches;
-      bestMatch = template;
-    }
-  }
-  
-  // Add some variability
-  const variablePoints = bestMatch.storyPoints + (Math.random() > 0.5 ? 1 : -1) * Math.floor(Math.random() * 3);
+  // Add some variability to story points
+  const variablePoints = selectedTemplate.storyPoints + (Math.random() > 0.5 ? 1 : -1) * Math.floor(Math.random() * 3);
   
   return {
-    title: bestMatch.title,
-    description: bestMatch.description,
-    acceptanceCriteria: bestMatch.acceptanceCriteria,
+    title: selectedTemplate.title,
+    description: selectedTemplate.description,
+    acceptanceCriteria: [...selectedTemplate.acceptanceCriteria],
     storyPoints: Math.max(1, Math.min(13, variablePoints)),
-    testData: bestMatch.testData,
-    devNotes: bestMatch.devNotes
+    testData: selectedTemplate.testData,
+    devNotes: selectedTemplate.devNotes
   };
-}
-
-function extractKeywords(text: string): string[] {
-  return text
-    .toLowerCase()
-    .replace(/[^\w\s]/g, ' ')
-    .split(/\s+/)
-    .filter(word => word.length > 3);
 }
