@@ -105,6 +105,13 @@ export function StoryBuilder({
   const [customPrompt, setCustomPrompt] = useState("");
   const [savedInput, setSavedInput] = useState(""); // For restart functionality
   const [savedCustomPrompt, setSavedCustomPrompt] = useState(""); // For restart functionality
+  const [savedOriginalStory, setSavedOriginalStory] = useState<{
+    title: string;
+    description: string;
+    acceptanceCriteria: string[];
+    storyPoints: number;
+  } | null>(null);
+  const [savedOriginalTestData, setSavedOriginalTestData] = useState<TestData | null>(null);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [showRawInput, setShowRawInput] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -307,6 +314,15 @@ export function StoryBuilder({
       setOriginalDescription(generatedStory.description);
       setDirtyCriteria(false);
       
+      // Save original draft for restart functionality
+      setSavedOriginalStory({
+        title: generatedStory.title,
+        description: generatedStory.description,
+        acceptanceCriteria: [...generatedStory.acceptanceCriteria],
+        storyPoints: generatedStory.storyPoints
+      });
+      setSavedOriginalTestData({ ...generatedTestData });
+      
       // Notify parent of story update
       onStoryUpdate?.(generatedStory);
       
@@ -388,6 +404,8 @@ export function StoryBuilder({
       setCustomPrompt("");
       setSavedInput("");
       setSavedCustomPrompt("");
+      setSavedOriginalStory(null);
+      setSavedOriginalTestData(null);
       setUploadedFiles([]);
       setShowRawInput(true);
       setHasDevNotes(false);
@@ -445,30 +463,47 @@ export function StoryBuilder({
     setShowNewStoryConfirm(false);
   };
 
-  const restartStory = async () => {
-    if (!savedInput) return;
+  const restartStory = () => {
+    if (!savedOriginalStory) return;
     
+    // Restore from saved original draft
     setStory(prev => ({
       ...prev,
-      title: "",
-      description: "",
-      acceptanceCriteria: [],
-      storyPoints: 0,
-      status: 'draft'
+      title: savedOriginalStory.title,
+      description: savedOriginalStory.description,
+      acceptanceCriteria: [...savedOriginalStory.acceptanceCriteria],
+      storyPoints: savedOriginalStory.storyPoints,
+      status: 'ready' as const
     }));
-    setTestData({
-      userInputs: [],
-      edgeCases: [],
-      apiResponses: [],
-      codeSnippets: []
-    });
-    setHasDevNotes(false);
-    setDevNotesOpen(false);
-    setRawInput(savedInput);
-    setCustomPrompt(savedCustomPrompt);
     
-    // Auto-generate after restart
-    await generateStory();
+    if (savedOriginalTestData) {
+      setTestData({ ...savedOriginalTestData });
+      
+      // Restore dev notes state if original had code snippets
+      if (savedOriginalTestData.codeSnippets.length > 0) {
+        setHasDevNotes(true);
+        setDevNotesOpen(true);
+      }
+    }
+    
+    // Reset dirty state since we're back to original
+    setOriginalTitle(savedOriginalStory.title);
+    setOriginalDescription(savedOriginalStory.description);
+    setDirtyCriteria(false);
+    
+    // Save a version noting the restart
+    saveVersion({
+      title: savedOriginalStory.title,
+      description: savedOriginalStory.description,
+      acceptanceCriteria: savedOriginalStory.acceptanceCriteria,
+      storyPoints: savedOriginalStory.storyPoints,
+      testData: savedOriginalTestData
+    }, "Restored to Original Draft");
+    
+    toast({
+      title: "Story Restored",
+      description: "Your story has been restored to its original generated draft.",
+    });
   };
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -735,7 +770,7 @@ export function StoryBuilder({
             <Button 
               onClick={restartStory}
               variant="outline"
-              disabled={!savedInput}
+              disabled={!savedOriginalStory}
               className="gap-2"
             >
               <RotateCcw className="h-4 w-4" />
