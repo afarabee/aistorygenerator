@@ -3,17 +3,27 @@ import AppLayout from "@/components/layout/AppLayout";
 import { StoryBuilder } from "@/components/story/StoryBuilder";
 import { ProjectSidebar } from "@/components/sidebar/ProjectSidebar";
 import { ChatPanel } from "@/components/chat/ChatPanel";
+import { StoryVersion } from "@/hooks/useVersionHistory";
 
 const StoryGenerator = () => {
   const [storyGenerated, setStoryGenerated] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [story, setStory] = useState<any>(null);
+  const [versions, setVersions] = useState<StoryVersion[]>([]);
+  const [currentStoryContent, setCurrentStoryContent] = useState<{
+    title: string;
+    description: string;
+    acceptanceCriteria: string[];
+    storyPoints: number;
+    testData?: any;
+  } | null>(null);
 
   // Refs to store handlers from StoryBuilder
   const applySuggestionRef = useRef<((type: string, content: any) => void) | null>(null);
   const undoSuggestionRef = useRef<(() => void) | null>(null);
   const restartStoryRef = useRef<(() => void) | null>(null);
   const newStoryRef = useRef<(() => void) | null>(null);
+  const restoreVersionRef = useRef<((version: StoryVersion) => void) | null>(null);
 
   const handleStoryGenerated = () => {
     setStoryGenerated(true);
@@ -52,12 +62,26 @@ const StoryGenerator = () => {
     }
   };
 
+  const handleVersionsChange = (newVersions: StoryVersion[], content: any) => {
+    setVersions(newVersions);
+    setCurrentStoryContent(content);
+  };
+
+  const handleRestoreVersion = (version: StoryVersion) => {
+    if (restoreVersionRef.current) {
+      restoreVersionRef.current(version);
+    }
+  };
+
   return (
     <AppLayout
       sidebarContent={
         <ProjectSidebar 
           onNewStory={handleNewStory}
           onRestartStory={handleRestartStory}
+          versions={versions}
+          currentStoryContent={currentStoryContent}
+          onRestoreVersion={handleRestoreVersion}
         />
       }
       chatContent={
@@ -76,8 +100,10 @@ const StoryGenerator = () => {
         showChat={showChat}
         onToggleChat={handleToggleChat}
         onStoryUpdate={setStory}
-        onSetApplySuggestionHandler={(applyHandler) => {
+        onVersionsChange={handleVersionsChange}
+        onSetApplySuggestionHandler={(applyHandler, restoreHandler) => {
           applySuggestionRef.current = applyHandler;
+          restoreVersionRef.current = restoreHandler;
         }}
         onSetRestartStoryHandler={(restartHandler) => {
           restartStoryRef.current = restartHandler;

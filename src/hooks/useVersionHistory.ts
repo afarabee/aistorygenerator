@@ -56,7 +56,11 @@ export function useVersionHistory() {
       } : undefined
     };
 
-    setVersions(prev => [newVersion, ...prev]);
+    setVersions(prev => {
+      const updated = [newVersion, ...prev];
+      // Enforce max 50 versions, prune oldest
+      return updated.length > 50 ? updated.slice(0, 50) : updated;
+    });
     return newVersion;
   }, []);
 

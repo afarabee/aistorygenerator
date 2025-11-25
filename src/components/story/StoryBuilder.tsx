@@ -181,7 +181,7 @@ export function StoryBuilder({
     }
   }, [versions, story, testData, onVersionsChange]);
 
-  // Auto-save logic - debounced save after 5 seconds of no typing
+  // Auto-save logic - debounced save after 10 seconds of no typing
   const createContentSnapshot = useCallback(() => {
     return JSON.stringify({
       title: story.title,
@@ -209,7 +209,7 @@ export function StoryBuilder({
     }
   }, [story, testData, saveVersion, lastAutoSaveContent]);
 
-  // Debounced auto-save after 5 seconds of no typing
+  // Debounced auto-save after 10 seconds of no typing
   useEffect(() => {
     const currentSnapshot = createContentSnapshot();
     
@@ -221,10 +221,10 @@ export function StoryBuilder({
         clearTimeout(autoSaveTimeoutRef.current);
       }
       
-      // Set new timeout for 5 seconds
+      // Set new timeout for 10 seconds
       autoSaveTimeoutRef.current = setTimeout(() => {
         saveAutoVersion("Edited by User");
-      }, 5000);
+      }, 10000);
     }
 
     return () => {
