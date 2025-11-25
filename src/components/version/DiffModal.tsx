@@ -18,8 +18,7 @@ export function DiffModal({ isOpen, onClose, version, currentContent, onRestore 
   const [expandedSections, setExpandedSections] = useState({
     title: true,
     description: true,
-    criteria: true,
-    testData: false
+    criteria: true
   });
 
   const toggleSection = (section: keyof typeof expandedSections) => {
@@ -187,29 +186,6 @@ export function DiffModal({ isOpen, onClose, version, currentContent, onRestore 
             )}
           </div>
 
-          {/* Test Data Comparison (if available) */}
-          {(version.testData || currentContent.testData) && (
-            <Collapsible open={expandedSections.testData} onOpenChange={() => toggleSection('testData')}>
-              <CollapsibleTrigger className="flex items-center justify-between w-full p-3 hover:bg-muted rounded-lg">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-medium">Test Data</h3>
-                  <Badge variant="outline" className="text-xs">Optional</Badge>
-                </div>
-                {expandedSections.testData ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-              </CollapsibleTrigger>
-              <CollapsibleContent className="px-3 pb-3">
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="text-sm font-medium mb-2">Edge Cases</h4>
-                    {renderArrayDiff(
-                      version.testData?.edgeCases || [],
-                      currentContent.testData?.edgeCases || []
-                    )}
-                  </div>
-                </div>
-              </CollapsibleContent>
-            </Collapsible>
-          )}
         </div>
       </DialogContent>
     </Dialog>
