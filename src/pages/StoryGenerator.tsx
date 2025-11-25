@@ -7,7 +7,6 @@ import { ChatPanel } from "@/components/chat/ChatPanel";
 const StoryGenerator = () => {
   const [storyGenerated, setStoryGenerated] = useState(false);
   const [showChat, setShowChat] = useState(false);
-  const [showTestData, setShowTestData] = useState(false);
   const [story, setStory] = useState<any>(null);
 
   // Refs to store handlers from StoryBuilder
@@ -28,17 +27,12 @@ const StoryGenerator = () => {
     }
     // Then reset parent state
     setStoryGenerated(false);
-    setShowTestData(false);
     setShowChat(false);
     setStory(null);
   };
 
   const handleToggleChat = () => {
     setShowChat(!showChat);
-  };
-
-  const handleToggleTestData = () => {
-    setShowTestData(!showTestData);
   };
 
   const handleApplySuggestion = (type: string, content: any) => {
@@ -62,8 +56,6 @@ const StoryGenerator = () => {
     <AppLayout
       sidebarContent={
         <ProjectSidebar 
-          showTestData={showTestData}
-          onToggleTestData={handleToggleTestData}
           onNewStory={handleNewStory}
           onRestartStory={handleRestartStory}
         />
@@ -83,8 +75,6 @@ const StoryGenerator = () => {
         onStoryGenerated={handleStoryGenerated}
         showChat={showChat}
         onToggleChat={handleToggleChat}
-        showTestData={showTestData}
-        onToggleTestData={handleToggleTestData}
         onStoryUpdate={setStory}
         onSetApplySuggestionHandler={(applyHandler) => {
           applySuggestionRef.current = applyHandler;
