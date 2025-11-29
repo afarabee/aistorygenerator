@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import AppLayout from "@/components/layout/AppLayout";
 import { StoryBuilder } from "@/components/story/StoryBuilder";
 import { ProjectSidebar } from "@/components/sidebar/ProjectSidebar";
@@ -63,10 +63,16 @@ const StoryGenerator = () => {
     }
   };
 
-  const handleVersionsChange = (newVersions: StoryVersion[], content: any) => {
-    setVersions(newVersions);
+  const handleVersionsChange = useCallback((newVersions: StoryVersion[], content: any) => {
+    setVersions(prev => {
+      // Only update if versions actually changed
+      if (prev.length !== newVersions.length) {
+        return newVersions;
+      }
+      return prev;
+    });
     setCurrentStoryContent(content);
-  };
+  }, []);
 
   const handleRestoreVersion = (version: StoryVersion) => {
     if (restoreVersionRef.current) {

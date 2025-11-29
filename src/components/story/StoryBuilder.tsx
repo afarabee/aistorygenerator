@@ -156,13 +156,6 @@ export function StoryBuilder({
     testData: TestData;
   } | null>(null);
 
-  // Register the apply suggestion handler
-  useEffect(() => {
-    if (onSetApplySuggestionHandler) {
-      onSetApplySuggestionHandler(handleApplySuggestion, handleRestoreVersion, handleUndoSuggestion);
-    }
-  }, [onSetApplySuggestionHandler]);
-
   // Register the new story handler for external use (like sidebar)
   useEffect(() => {
     if (onSetNewStoryHandler) {
@@ -552,7 +545,7 @@ export function StoryBuilder({
     console.log(`Refreshing ${section} test data`);
   };
 
-  const handleApplySuggestion = (type: string, content: any) => {
+  const handleApplySuggestion = useCallback((type: string, content: any) => {
     // Save current state for undo functionality BEFORE making changes
     setPreUndoState({
       story: { ...story },
@@ -666,14 +659,14 @@ export function StoryBuilder({
         description: "Story updated successfully.",
       });
     }
-  };
+  }, [story, testData, saveVersion, setLastAutoSaveContent, onStoryUpdate, toast]);
 
   const flashHighlight = (field: string, index?: number) => {
     setHighlightedContent({ field, index });
     setTimeout(() => setHighlightedContent(null), 4000);
   };
 
-  const handleRestoreVersion = (version: StoryVersion) => {
+  const handleRestoreVersion = useCallback((version: StoryVersion) => {
     setStory(prev => ({
       ...prev,
       title: version.title,
@@ -695,9 +688,9 @@ export function StoryBuilder({
       title: "Version restored successfully",
       description: `Restored: ${version.label}`,
     });
-  };
+  }, [toast]);
 
-  const handleUndoSuggestion = () => {
+  const handleUndoSuggestion = useCallback(() => {
     if (!preUndoState) return;
     
     setStory(preUndoState.story);
@@ -711,7 +704,14 @@ export function StoryBuilder({
       title: "Suggestion Undone",
       description: "Reverted to previous state.",
     });
-  };
+  }, [preUndoState, onStoryUpdate, toast]);
+
+  // Register the apply suggestion handler (must be after handler definitions)
+  useEffect(() => {
+    if (onSetApplySuggestionHandler) {
+      onSetApplySuggestionHandler(handleApplySuggestion, handleRestoreVersion, handleUndoSuggestion);
+    }
+  }, [onSetApplySuggestionHandler, handleApplySuggestion, handleRestoreVersion, handleUndoSuggestion]);
 
   const handleSaveManual = () => {
     const storyContent = {
