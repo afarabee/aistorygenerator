@@ -325,7 +325,7 @@ export function ChatPanel({ onApplySuggestion, onUndoSuggestion, isHorizontallyC
                           </Tooltip>
                         </TooltipProvider>
                       )}
-                      {lastAppliedSuggestion && (
+                      {message.type === 'ai' && lastAppliedSuggestion?.id === message.id && (
                         <Button
                           variant="ghost"
                           size="sm"

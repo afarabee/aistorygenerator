@@ -73,7 +73,11 @@ interface UploadedFile {
 interface StoryBuilderProps {
   showChat?: boolean;
   onToggleChat?: () => void;
-  onSetApplySuggestionHandler?: (handler: (type: string, content: string) => void, restoreHandler?: (version: StoryVersion) => void) => void;
+  onSetApplySuggestionHandler?: (
+    handler: (type: string, content: string) => void, 
+    restoreHandler?: (version: StoryVersion) => void,
+    undoHandler?: () => void
+  ) => void;
   onSetRestartStoryHandler?: (handler: () => void) => void;
   onNewStory?: () => void;
   storyGenerated?: boolean;
@@ -145,11 +149,17 @@ export function StoryBuilder({
   const [lastAutoSaveContent, setLastAutoSaveContent] = useState<string>('');
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const autoSaveIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Pre-undo state for reverting AI suggestions
+  const [preUndoState, setPreUndoState] = useState<{
+    story: UserStory;
+    testData: TestData;
+  } | null>(null);
 
   // Register the apply suggestion handler
   useEffect(() => {
     if (onSetApplySuggestionHandler) {
-      onSetApplySuggestionHandler(handleApplySuggestion, handleRestoreVersion);
+      onSetApplySuggestionHandler(handleApplySuggestion, handleRestoreVersion, handleUndoSuggestion);
     }
   }, [onSetApplySuggestionHandler]);
 
@@ -543,6 +553,12 @@ export function StoryBuilder({
   };
 
   const handleApplySuggestion = (type: string, content: any) => {
+    // Save current state for undo functionality BEFORE making changes
+    setPreUndoState({
+      story: { ...story },
+      testData: { ...testData }
+    });
+    
     let updatedStory = story;
     let updatedTestData = testData;
     let appliedField = '';
@@ -676,6 +692,22 @@ export function StoryBuilder({
     toast({
       title: "Version restored successfully",
       description: `Restored: ${version.label}`,
+    });
+  };
+
+  const handleUndoSuggestion = () => {
+    if (!preUndoState) return;
+    
+    setStory(preUndoState.story);
+    setTestData(preUndoState.testData);
+    setPreUndoState(null);
+    
+    // Notify parent of story update
+    onStoryUpdate?.(preUndoState.story);
+    
+    toast({
+      title: "Suggestion Undone",
+      description: "Reverted to previous state.",
     });
   };
 
