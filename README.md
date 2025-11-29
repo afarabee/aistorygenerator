@@ -2,7 +2,7 @@
 
 [![Built with Lovable](https://img.shields.io/badge/Built_with-Lovable-db2777?style=flat-square&logo=heart)](https://lovable.dev/projects/00b71058-6b2b-4a5c-8dfa-0b146db9a748)
 
-**AI-Assisted User Story Generatorr** is an AI-powered tool designed to streamline the creation, refinement, and management of Agile user stories. It helps Product Owners and Developers generate high-quality stories, refine them via an intelligent chat interface, and push finalized Product Backlog Items (PBIs) directly to **Azure DevOps (ADO)**.
+**AI-Assisted User Story Generator** is an AI-powered tool designed to streamline the creation, refinement, and management of Agile user stories. It helps Product Owners and Developers generate high-quality stories, refine them via an intelligent chat interface, and push finalized Product Backlog Items (PBIs) directly to **Azure DevOps (ADO)**.
 
 ---
 
@@ -15,7 +15,7 @@
     * **Context Aware:** The AI is aware of the current story state and strictly adheres to UI capabilities.
 
 ### 🔌 Advanced Integrations
-* **Azure DevOps (ADO):** Pushes finalized stories as PBIs with the correct Iteration Paths, formatted bullet points for Acceptance Criteria, and auto-tagging (e.g., `chatgpt`).
+* **Azure DevOps (ADO):** Pushes finalized stories as PBIs with the configured Project and Team, selected Iteration Path, selected story points, formatted bullet points for Acceptance Criteria, and auto-tagging (e.g., `chatgpt`).
 * **GitHub RAG Pipeline:** Connects to your repository to "Generate Developer Notes." The system analyzes your codebase to append relevant file paths, code patterns, and implementation steps directly to the story description.
 
 ### 🕰️ Version Management
