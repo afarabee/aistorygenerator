@@ -388,6 +388,38 @@ export function generateMockChatResponse(
         suggestion: 'System logs critical events, tracks performance metrics, and provides debugging information',
         field: 'acceptanceCriteria'
       }
+    },
+    {
+      text: "Let me suggest a clearer title that better captures the user value.",
+      context: {
+        type: 'story',
+        suggestion: 'Enhanced ' + (currentStory?.title || 'User Story') + ' with Improved UX',
+        field: 'title'
+      }
+    },
+    {
+      text: "Here's a more action-oriented title.",
+      context: {
+        type: 'story',
+        suggestion: (currentStory?.title || 'Feature').replace(/^.*?(?=User|Feature|Story|System)/i, 'Streamlined '),
+        field: 'title'
+      }
+    },
+    {
+      text: "I'll enhance the description with more context about user value.",
+      context: {
+        type: 'story',
+        suggestion: (currentStory?.description || 'As a user') + ' Additionally, this provides improved efficiency and reduces friction in the workflow.',
+        field: 'description'
+      }
+    },
+    {
+      text: "Let me refine the description to be more concise.",
+      context: {
+        type: 'story',
+        suggestion: 'As a user, I want to quickly accomplish my goal with minimal steps, so that I can focus on higher-value tasks.',
+        field: 'description'
+      }
     }
   ];
 

@@ -599,23 +599,26 @@ export function StoryBuilder({
       appliedField = 'story-points';
     } else if (type === 'story') {
       // Update story fields (title or description)
-      if (content.field === 'title') {
+      const fieldName = typeof content === 'object' ? content.field : null;
+      const suggestionValue = typeof content === 'object' ? content.suggestion : content;
+      
+      if (fieldName === 'title') {
         updatedStory = {
           ...story,
-          title: content.suggestion || content
+          title: suggestionValue
         };
         setStory(updatedStory);
         appliedField = 'story-title';
-      } else if (content.field === 'description') {
+      } else if (fieldName === 'description') {
         updatedStory = {
           ...story,
-          description: content.suggestion || content
+          description: suggestionValue
         };
         setStory(updatedStory);
         appliedField = 'story-description';
-      } else if (typeof content === 'string' && content.toLowerCase().includes('point')) {
+      } else if (typeof suggestionValue === 'string' && suggestionValue.toLowerCase().includes('point')) {
         // Legacy: extract points from string
-        const pointsMatch = content.match(/(\d+)\s*point/);
+        const pointsMatch = suggestionValue.match(/(\d+)\s*point/);
         if (pointsMatch) {
           updatedStory = {
             ...story,

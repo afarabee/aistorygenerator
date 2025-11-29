@@ -34,6 +34,7 @@ interface ChatMessage {
   timestamp: Date;
   context?: 'story' | 'criteria' | 'testing' | 'dev-notes' | 'points';
   suggestion?: any;
+  field?: string;
   hasUserFacingSuggestion?: boolean;
 }
 
@@ -173,6 +174,7 @@ export function ChatPanel({ onApplySuggestion, onUndoSuggestion, isHorizontallyC
       timestamp: new Date(),
       context: mockResponse.context.type,
       suggestion: mockResponse.context.suggestion,
+      field: mockResponse.context.field,
       hasUserFacingSuggestion: !!mockResponse.context.suggestion
     };
 
@@ -202,8 +204,9 @@ export function ChatPanel({ onApplySuggestion, onUndoSuggestion, isHorizontallyC
     let handlerType = message.context;
     let content = message.suggestion;
     
-    if (typeof content === 'object' && content.field) {
-      handlerType = content.field === 'title' || content.field === 'description' ? 'story' : message.context;
+    // For story type with a field, wrap in object so StoryBuilder can identify title/description
+    if (message.context === 'story' && message.field) {
+      content = { suggestion: message.suggestion, field: message.field };
     }
     
     onApplySuggestion?.(handlerType, content);
