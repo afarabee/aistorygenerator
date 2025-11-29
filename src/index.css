@@ -106,3 +106,28 @@ All colors MUST be HSL.
     @apply font-semibold tracking-tight;
   }
 }
+
+@layer components {
+  .text-highlight-applied {
+    @apply text-emerald-600 dark:text-emerald-400 animate-[highlight-fade_4s_ease-in-out];
+  }
+}
+
+@keyframes highlight-fade {
+  0% {
+    background-color: hsl(142 76% 36% / 0.15);
+    box-shadow: 0 0 0 2px hsl(142 76% 36% / 0.5);
+  }
+  25% {
+    background-color: hsl(142 76% 36% / 0.2);
+    box-shadow: 0 0 12px 4px hsl(142 76% 36% / 0.4);
+  }
+  50% {
+    background-color: hsl(142 76% 36% / 0.15);
+    box-shadow: 0 0 0 2px hsl(142 76% 36% / 0.3);
+  }
+  100% {
+    background-color: transparent;
+    box-shadow: none;
+  }
+}

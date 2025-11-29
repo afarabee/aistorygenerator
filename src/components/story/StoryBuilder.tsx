@@ -142,7 +142,7 @@ export function StoryBuilder({
   const [hasDevNotes, setHasDevNotes] = useState(false);
   const [devNotesOpen, setDevNotesOpen] = useState(true);
   const [chatHorizontallyCollapsed, setChatHorizontallyCollapsed] = useState(false);
-  const [appliedFieldId, setAppliedFieldId] = useState<string | null>(null);
+  const [highlightedContent, setHighlightedContent] = useState<{ field: string, index?: number } | null>(null);
   const [showNewStoryConfirm, setShowNewStoryConfirm] = useState(false);
   
   // Auto-save state
@@ -425,7 +425,7 @@ export function StoryBuilder({
       setDirtyCriteria(false);
       setIsGenerating(false);
       setIsGeneratingDevNotes(false);
-      setAppliedFieldId(null);
+      setHighlightedContent(null);
       
       clearVersions();
       setLastAutoSaveContent('');
@@ -562,6 +562,7 @@ export function StoryBuilder({
     let updatedStory = story;
     let updatedTestData = testData;
     let appliedField = '';
+    let appliedIndex: number | undefined = undefined;
 
     // Handle different suggestion types
     if (type === 'testing') {
@@ -592,6 +593,7 @@ export function StoryBuilder({
         };
         setStory(updatedStory);
         appliedField = 'acceptance-criteria';
+        appliedIndex = updatedStory.acceptanceCriteria.length - 1; // Track the newly added criterion
       }
     } else if (type === 'points') {
       // Update story points
@@ -645,7 +647,7 @@ export function StoryBuilder({
 
     // Auto-save version after applying suggestion
     if (appliedField) {
-      flashField(appliedField);
+      flashHighlight(appliedField, appliedIndex);
       const storyContent = {
         title: updatedStory.title,
         description: updatedStory.description,
@@ -666,9 +668,9 @@ export function StoryBuilder({
     }
   };
 
-  const flashField = (fieldId: string) => {
-    setAppliedFieldId(fieldId);
-    setTimeout(() => setAppliedFieldId(null), 2000);
+  const flashHighlight = (field: string, index?: number) => {
+    setHighlightedContent({ field, index });
+    setTimeout(() => setHighlightedContent(null), 4000);
   };
 
   const handleRestoreVersion = (version: StoryVersion) => {
@@ -740,7 +742,7 @@ export function StoryBuilder({
       `Error messages are displayed for invalid inputs`
     ];
     setStory(prev => ({ ...prev, acceptanceCriteria: newCriteria }));
-    flashField('acceptance-criteria');
+    flashHighlight('acceptance-criteria');
     setIsGenerating(false);
     setDirtyCriteria(false);
   };
@@ -933,6 +935,9 @@ export function StoryBuilder({
                   value={story.title}
                   onChange={(e) => setStory(prev => ({ ...prev, title: e.target.value }))}
                   placeholder="Enter story title..."
+                  className={cn(
+                    highlightedContent?.field === 'story-title' && "text-highlight-applied"
+                  )}
                 />
               </div>
               
@@ -944,6 +949,9 @@ export function StoryBuilder({
                   onChange={(e) => setStory(prev => ({ ...prev, description: e.target.value }))}
                   placeholder="As a [user], I want [goal] so that [benefit]..."
                   rows={3}
+                  className={cn(
+                    highlightedContent?.field === 'story-description' && "text-highlight-applied"
+                  )}
                 />
               </div>
 
@@ -983,10 +991,7 @@ export function StoryBuilder({
                     </Button>
                   </div>
                 </div>
-                <div className={cn(
-                  appliedFieldId === 'acceptance-criteria' && "ring-2 ring-primary animate-pulse",
-                  "space-y-2 mt-2"
-                )}>
+                <div className="space-y-2 mt-2">
                   {story.acceptanceCriteria.map((criterion, index) => (
                       <div key={index} className="flex items-center gap-2">
                         <CheckCircle className="h-4 w-4 text-status-ready flex-shrink-0" />
@@ -1000,7 +1005,9 @@ export function StoryBuilder({
                           placeholder="Enter acceptance criterion..."
                           className={cn(
                             "text-sm flex-1",
-                            appliedFieldId === 'acceptance-criteria' && "ring-2 ring-primary animate-pulse"
+                            highlightedContent?.field === 'acceptance-criteria' && 
+                            highlightedContent?.index === index && 
+                            "text-highlight-applied"
                           )}
                         />
                       <Button
@@ -1030,7 +1037,7 @@ export function StoryBuilder({
                   <Select value={story.storyPoints.toString()} onValueChange={(value) => setStory(prev => ({ ...prev, storyPoints: parseInt(value) }))}>
                     <SelectTrigger className={cn(
                       "w-24",
-                      appliedFieldId === 'story-points' && "ring-2 ring-primary animate-pulse"
+                      highlightedContent?.field === 'story-points' && "text-highlight-applied"
                     )}>
                       <SelectValue />
                     </SelectTrigger>
