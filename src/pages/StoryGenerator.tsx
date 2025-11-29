@@ -52,8 +52,9 @@ const StoryGenerator = () => {
   };
 
   const handleUndoSuggestion = () => {
-    // Undo is handled by version history in StoryBuilder
-    console.log('Undo requested from ChatPanel');
+    if (undoSuggestionRef.current) {
+      undoSuggestionRef.current();
+    }
   };
 
   const handleRestartStory = () => {
@@ -101,9 +102,10 @@ const StoryGenerator = () => {
         onToggleChat={handleToggleChat}
         onStoryUpdate={setStory}
         onVersionsChange={handleVersionsChange}
-        onSetApplySuggestionHandler={(applyHandler, restoreHandler) => {
+        onSetApplySuggestionHandler={(applyHandler, restoreHandler, undoHandler) => {
           applySuggestionRef.current = applyHandler;
           restoreVersionRef.current = restoreHandler;
+          undoSuggestionRef.current = undoHandler;
         }}
         onSetRestartStoryHandler={(restartHandler) => {
           restartStoryRef.current = restartHandler;

@@ -203,6 +203,30 @@ export function generateMockChatResponse(
     };
   }
   
+  // General guidance responses (no Apply button - no actionable suggestion)
+  const generalGuidanceResponses: MockChatResponse[] = [
+    {
+      text: "Good question! For this type of story, consider breaking it down into smaller, testable pieces. Each acceptance criterion should be independently verifiable.",
+      context: { type: 'story' }
+    },
+    {
+      text: "That's a solid approach. INVEST criteria (Independent, Negotiable, Valuable, Estimable, Small, Testable) are helpful guidelines when crafting user stories.",
+      context: { type: 'story' }
+    },
+    {
+      text: "Based on your story, the scope looks appropriate. Make sure each acceptance criterion has clear pass/fail conditions that QA can verify.",
+      context: { type: 'story' }
+    },
+    {
+      text: "Consider the user's perspective here. What would success look like from their point of view? This helps shape better acceptance criteria.",
+      context: { type: 'story' }
+    },
+    {
+      text: "The story points seem reasonable. Remember that complexity, uncertainty, and effort all factor into estimation.",
+      context: { type: 'points' }
+    }
+  ];
+  
   // Random suggestion generator for any input that doesn't match keywords
   const randomSuggestions: MockChatResponse[] = [
     {
@@ -367,6 +391,11 @@ export function generateMockChatResponse(
     }
   ];
 
+  // 20% chance to return general guidance (no Apply button) instead of actionable suggestion
+  if (Math.random() < 0.2) {
+    return generalGuidanceResponses[Math.floor(Math.random() * generalGuidanceResponses.length)];
+  }
+  
   // Return random suggestion for any unmatched input (including gibberish)
   return randomSuggestions[Math.floor(Math.random() * randomSuggestions.length)];
 }
