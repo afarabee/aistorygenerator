@@ -559,14 +559,16 @@ export function StoryBuilder({
 
     // Handle different suggestion types
     if (type === 'testing') {
-      // Add to edge cases
+      // Add edge case as acceptance criterion with visual prefix
       const edgeCase = typeof content === 'string' ? content.split('.')[0] : content;
-      updatedTestData = {
-        ...testData,
-        edgeCases: [...testData.edgeCases, edgeCase]
+      const edgeCaseCriterion = `🧪 ${edgeCase}`;
+      updatedStory = {
+        ...story,
+        acceptanceCriteria: [...story.acceptanceCriteria, edgeCaseCriterion]
       };
-      setTestData(updatedTestData);
-      appliedField = 'edge-cases';
+      setStory(updatedStory);
+      appliedField = 'acceptance-criteria';
+      appliedIndex = updatedStory.acceptanceCriteria.length - 1;
     } else if (type === 'criteria') {
       // Handle add or remove AC
       if (typeof content === 'object' && content.action === 'remove') {

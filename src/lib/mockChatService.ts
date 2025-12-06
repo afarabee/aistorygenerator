@@ -117,11 +117,11 @@ export function generateMockChatResponse(
   
   if (input.includes('edge case')) {
     return {
-      text: "I've identified an important edge case to consider for testing.",
+      text: "I'll add this edge case as an acceptance criterion.",
       context: {
         type: 'testing',
         suggestion: 'Concurrent access from multiple sessions with conflicting data updates',
-        field: 'edgeCases'
+        field: 'acceptanceCriteria'
       }
     };
   }
@@ -194,11 +194,11 @@ export function generateMockChatResponse(
   
   if (input.includes('test') && (input.includes('data') || input.includes('case'))) {
     return {
-      text: "I recommend testing with this additional scenario.",
+      text: "I'll add this testing scenario to your acceptance criteria.",
       context: {
         type: 'testing',
         suggestion: 'User attempts to perform action without required permissions or authentication',
-        field: 'edgeCases'
+        field: 'acceptanceCriteria'
       }
     };
   }
@@ -254,11 +254,11 @@ export function generateMockChatResponse(
       }
     },
     {
-      text: "Here's an important edge case to consider.",
+      text: "I'll add this edge case to your acceptance criteria.",
       context: {
         type: 'testing',
         suggestion: 'User attempts operation with expired session or invalid authentication token',
-        field: 'edgeCases'
+        field: 'acceptanceCriteria'
       }
     },
     {
@@ -286,11 +286,11 @@ export function generateMockChatResponse(
       }
     },
     {
-      text: "Here's a boundary testing scenario.",
+      text: "I'll add this boundary testing scenario to your criteria.",
       context: {
         type: 'testing',
         suggestion: 'System handles maximum data limits, empty states, and concurrent user actions gracefully',
-        field: 'edgeCases'
+        field: 'acceptanceCriteria'
       }
     },
     {
@@ -310,11 +310,11 @@ export function generateMockChatResponse(
       }
     },
     {
-      text: "Here's a data integrity edge case.",
+      text: "I'll add this data integrity check to your acceptance criteria.",
       context: {
         type: 'testing',
         suggestion: 'Verify data consistency during network interruptions and partial failures',
-        field: 'edgeCases'
+        field: 'acceptanceCriteria'
       }
     },
     {
@@ -342,11 +342,11 @@ export function generateMockChatResponse(
       }
     },
     {
-      text: "I'll add a network resilience edge case.",
+      text: "I'll add this network resilience criterion.",
       context: {
         type: 'testing',
         suggestion: 'Test behavior under slow network conditions, timeouts, and offline scenarios',
-        field: 'edgeCases'
+        field: 'acceptanceCriteria'
       }
     },
     {
@@ -374,11 +374,11 @@ export function generateMockChatResponse(
       }
     },
     {
-      text: "Let's test internationalization edge cases.",
+      text: "I'll add this i18n testing criterion.",
       context: {
         type: 'testing',
         suggestion: 'Verify handling of special characters, right-to-left languages, and varying date/number formats',
-        field: 'edgeCases'
+        field: 'acceptanceCriteria'
       }
     },
     {
