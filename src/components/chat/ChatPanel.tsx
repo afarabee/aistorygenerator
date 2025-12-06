@@ -22,7 +22,8 @@ import {
   Check,
   CheckCircle,
   Undo2,
-  ArrowDown
+  ArrowDown,
+  FlaskConical
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { generateMockChatResponse } from "@/lib/mockChatService";
@@ -262,10 +263,16 @@ export function ChatPanel({ onApplySuggestion, onUndoSuggestion, isHorizontallyC
             >
               <span className="text-lg font-bold">⟨</span>
             </Button>
-            <CardTitle className="text-lg flex items-center gap-2">
-              <MessageSquare className="h-5 w-5 text-primary" />
-              Story Refinement Chat
-            </CardTitle>
+            <div className="flex flex-col">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <MessageSquare className="h-5 w-5 text-primary" />
+                Story Refinement Chat
+              </CardTitle>
+              <span className="text-xs text-amber-600 flex items-center gap-1 ml-7">
+                <FlaskConical className="h-3 w-3" />
+                Using simulated responses
+              </span>
+            </div>
           </div>
         </div>
       </CardHeader>
