@@ -9,8 +9,10 @@ import {
   Save,
   Copy,
   Eye,
-  Zap
+  Zap,
+  FlaskConical
 } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { SettingsModal } from "@/components/settings/SettingsModal";
 
@@ -42,6 +44,22 @@ export default function AppLayout({
           <div className="flex items-center gap-2">
             <Zap className="h-6 w-6 text-primary" />
             <h1 className="text-xl font-semibold">Story Generator</h1>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge variant="outline" className="gap-1 bg-amber-500/10 text-amber-600 border-amber-500/30 cursor-help">
+                    <FlaskConical className="h-3 w-3" />
+                    Demo Mode
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-xs">
+                  <p className="text-sm">
+                    This app is running with simulated AI responses. 
+                    Connect to n8n/LLM for live AI-powered story generation.
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
           <div className="text-sm text-muted-foreground">
             {currentProject}
