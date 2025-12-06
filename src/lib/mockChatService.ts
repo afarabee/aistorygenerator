@@ -249,7 +249,7 @@ export function generateMockChatResponse(
       text: "I recommend adjusting story points based on complexity.",
       context: {
         type: 'points',
-        suggestion: Math.floor(Math.random() * 6) + 3, // Random 3-8
+        suggestion: [3, 5, 8][Math.floor(Math.random() * 3)], // Random Fibonacci: 3, 5, or 8
         field: 'storyPoints'
       }
     },
