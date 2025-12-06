@@ -291,18 +291,22 @@ const storyTemplates: MockStoryTemplate[] = [
 ];
 
 export function generateMockStory(rawInput: string, customPrompt?: string) {
+  // Valid Fibonacci values for story points
+  const fibonacciPoints = [1, 2, 3, 5, 8, 13];
+  
   // Randomly select a template for demo purposes (no keyword matching needed)
   const randomIndex = Math.floor(Math.random() * storyTemplates.length);
   const selectedTemplate = storyTemplates[randomIndex];
   
-  // Add some variability to story points
-  const variablePoints = selectedTemplate.storyPoints + (Math.random() > 0.5 ? 1 : -1) * Math.floor(Math.random() * 3);
+  // Select random Fibonacci points (weighted towards middle values: 3, 5, 8)
+  const weightedFibonacci = [3, 3, 5, 5, 5, 8, 8, 13];
+  const variablePoints = weightedFibonacci[Math.floor(Math.random() * weightedFibonacci.length)];
   
   return {
     title: selectedTemplate.title,
     description: selectedTemplate.description,
     acceptanceCriteria: [...selectedTemplate.acceptanceCriteria],
-    storyPoints: Math.max(1, Math.min(13, variablePoints)),
+    storyPoints: variablePoints,
     testData: selectedTemplate.testData,
     devNotes: selectedTemplate.devNotes
   };
